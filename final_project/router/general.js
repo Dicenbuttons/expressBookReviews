@@ -21,7 +21,7 @@ public_users.get('/isbn/:isbn', function (req, res) {
     // Retrieve the ISBN from the request parameters
     const isbn = req.params.isbn;
 
-    // Assuming 'books' is an object where keys are ISBNs and values are book details
+    // Retrieve details from the books object based on the isbn
     const bookDetails = books[isbn];
 
     if (bookDetails) {
@@ -33,10 +33,25 @@ public_users.get('/isbn/:isbn', function (req, res) {
     }
 });
   
-// Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+public_users.get('/author/:author', function (req, res) {
+    const author = req.params.author;
+    const booksByAuthor = [];
+
+    // Assuming 'books' is an object where each key is a book ID and the value is the book details
+    const bookKeys = Object.keys(books);
+
+    bookKeys.forEach(key => {
+        const book = books[key];
+        if (book.author === author) {
+            booksByAuthor.push(book);
+        }
+    });
+
+    if (booksByAuthor.length > 0) {
+        res.json(booksByAuthor);
+    } else {
+        res.status(404).send('No books found by this author');
+    }
 });
 
 // Get all books based on title
