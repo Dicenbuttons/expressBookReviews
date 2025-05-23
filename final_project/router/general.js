@@ -33,6 +33,7 @@ public_users.get('/isbn/:isbn', function (req, res) {
     }
 });
   
+// Get book details based on the author
 public_users.get('/author/:author', function (req, res) {
     const author = req.params.author;
     const booksByAuthor = [];
@@ -54,6 +55,7 @@ public_users.get('/author/:author', function (req, res) {
     }
 });
 
+// Get book details based on title
 public_users.get('/title/:title', function (req, res) {
     const title = req.params.title;
     const booksByTitle = [];
@@ -75,10 +77,17 @@ public_users.get('/title/:title', function (req, res) {
     }
 });
 
-//  Get book review
-public_users.get('/review/:isbn',function (req, res) {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+//  Get book review based on ISBN
+public_users.get('/review/:isbn', function (req, res) {
+    const isbn = req.params.isbn;
+   // Get book details based on ISBN
+    const reviews = books[isbn];
+
+    if (reviews) {
+        res.json(reviews);
+    } else {
+        res.status(404).json({ message: "No reviews found for this ISBN" });
+    }
 });
 
 module.exports.general = public_users;
