@@ -4,10 +4,23 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
+// Code to register a new user
+app.post('/register', (req, res) => {
+    const { username, password } = req.body;
 
-public_users.post("/register", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+    // Check if username or password is missing
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required.' });
+    }
+
+    // Check if the username already exists
+    if (users[username]) {
+        return res.status(400).json({ error: 'Username already exists.' });
+    }
+
+    // Register the new user
+    users[username] = { password }; // You should hash the password in a real application
+    return res.status(201).json({ message: 'User registered successfully.' });
 });
 
 // Get the book list available in the shop
@@ -80,11 +93,11 @@ public_users.get('/title/:title', function (req, res) {
 //  Get book review based on ISBN
 public_users.get('/review/:isbn', function (req, res) {
     const isbn = req.params.isbn;
-   // Get book details based on ISBN
-    const reviews = books[isbn];
+    // Assuming 'books' is an object where keys are ISBNs and values are book objects
+    const book = books[isbn];
 
-    if (reviews) {
-        res.json(reviews);
+    if (book && book.reviews) {
+        res.json(book.reviews);
     } else {
         res.status(404).json({ message: "No reviews found for this ISBN" });
     }
