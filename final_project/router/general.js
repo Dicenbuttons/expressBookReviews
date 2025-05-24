@@ -5,7 +5,7 @@ let users = require("./auth_users.js").users;
 const public_users = express.Router();
 
 // Code to register a new user
-app.post('/register', (req, res) => {
+public_users.post('/register', (req, res) => {
     const { username, password } = req.body;
 
     // Check if username or password is missing
@@ -21,6 +21,7 @@ app.post('/register', (req, res) => {
     // Register the new user
     users[username] = { password }; // You should hash the password in a real application
     return res.status(201).json({ message: 'User registered successfully.' });
+    console.log(users);
 });
 
 // Get the book list available in the shop
