@@ -24,43 +24,42 @@ const authenticatedUser = (username, password) => {
 // Only registered users can login
 regd_users.post("/login", (req, res) => {
     const { username, password } = req.body;
-  
-    // Check if both username and password are provided
+
     if (!username || !password) {
-      return res.status(400).json({ message: "Username and password are required" });
+        return res.status(400).json({ message: "Username and password are required" });
     }
-  
-    // Authenticate the user
+
     if (authenticatedUser(username, password)) {
-      // Generate a JWT for the session
-      const token = jwt.sign({ username }, 'your_secret_key', { expiresIn: '2h' });
-      return res.status(200).json({ message: "Login successful", token });
+        const token = jwt.sign({ username }, 'access', { expiresIn: '2h' });
+
+        // ✅ Store token in session
+        req.session.authorization = {
+            accessToken: token
+        };
+
+        return res.status(200).json({ message: "Login successful" });
     } else {
-      return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid username or password" });
     }
-  });
+});
 
 // Middleware to verify JWT and extract username
 regd_users.use((req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ message: 'Authorization header missing' });
-    }
-  
-    const token = authHeader.split(' ')[1];
+    // Use session for the jwt
+    const token = req.session?.authorization?.accessToken;
     if (!token) {
-      return res.status(401).json({ message: 'Token missing' });
+      return res.status(401).json({ message: 'Token missing from session' });
     }
-  
+
     try {
-      const decoded = jwt.verify(token, 'your_secret_key');
+      const decoded = jwt.verify(token, 'access'); // use same secret as index.js
       req.user = decoded.username;
       next();
     } catch (err) {
       return res.status(403).json({ message: 'Invalid or expired token' });
     }
-  });
-  
+});
+
 // Add or update a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
@@ -89,6 +88,27 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
       reviews: book.reviews
     });
   });
+
+  // Delete your own book review
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+    const username = req.user;
+
+    const book = books[isbn];
+    if (!book) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    if (!book.reviews || !book.reviews[username]) {
+        return res.status(404).json({ message: "No review found for this user" });
+    }
+
+    // Delete the user's review
+    delete book.reviews[username];
+
+    return res.status(200).json({ message: "Review deleted successfully" });
+});
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
