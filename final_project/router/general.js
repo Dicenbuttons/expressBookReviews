@@ -44,65 +44,93 @@ public_users.get('/', async (req, res) => {
 
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn', function (req, res) {
-    // Retrieve the ISBN from the request parameters
+public_users.get('/isbn/:isbn', async (req, res) => {
     const isbn = req.params.isbn;
 
-    // Retrieve details from the books object based on the isbn
-    const bookDetails = books[isbn];
+    try {
+        // Simulate asynchronous db/API fetch using a Promise
+        const getBookByISBN = (isbn) => {
+            return new Promise((resolve, reject) => {
+                const book = books[isbn];
+                if (book) {
+                    resolve(book);
+                } else {
+                    reject(new Error("Book not found"));
+                }
+            });
+        };
 
-    if (bookDetails) {
-        // Send the book details as a response
-        res.json(bookDetails);
-    } else {
-        // If the book is not found, send a 404 response
-        res.status(404).send('Book not found');
+        const bookDetails = await getBookByISBN(isbn);
+        res.status(200).json(bookDetails);
+
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
 });
+
   
 // Get book details based on the author
-public_users.get('/author/:author', function (req, res) {
+public_users.get('/author/:author', async (req, res) => {
     const author = req.params.author;
-    const booksByAuthor = [];
 
-    // Retrieve details from the books array
-    const bookKeys = Object.keys(books);
+    try {
+        // Simulate async data fetching with a Promise
+        const getBooksByAuthor = (author) => {
+            return new Promise((resolve, reject) => {
+                const booksByAuthor = [];
 
-    bookKeys.forEach(key => {
-        const book = books[key];
-        if (book.author === author) {
-            booksByAuthor.push(book);
-        }
-    });
+                for (let key in books) {
+                    if (books[key].author === author) {
+                        booksByAuthor.push(books[key]);
+                    }
+                }
 
-    if (booksByAuthor.length > 0) {
-        res.json(booksByAuthor);
-    } else {
-        res.status(404).send('No books found by this author');
+                if (booksByAuthor.length > 0) {
+                    resolve(booksByAuthor);
+                } else {
+                    reject(new Error("No books found by this author"));
+                }
+            });
+        };
+
+        const results = await getBooksByAuthor(author);
+        res.status(200).json(results);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
 });
+
 
 // Get book details based on title
-public_users.get('/title/:title', function (req, res) {
+public_users.get('/title/:title', async (req, res) => {
     const title = req.params.title;
-    const booksByTitle = [];
 
-    // Retrieve details from the books array
-    const bookKeys = Object.keys(books);
+    try {
+        const getBooksByTitle = (title) => {
+            return new Promise((resolve, reject) => {
+                const booksByTitle = [];
 
-    bookKeys.forEach(key => {
-        const book = books[key];
-        if (book.title === title) {
-            booksByTitle.push(book);
-        }
-    });
+                for (let key in books) {
+                    if (books[key].title === title) {
+                        booksByTitle.push(books[key]);
+                    }
+                }
 
-    if (booksByTitle.length > 0) {
-        res.json(booksByTitle);
-    } else {
-        res.status(404).send('No books found with this title');
+                if (booksByTitle.length > 0) {
+                    resolve(booksByTitle);
+                } else {
+                    reject(new Error("No books found with this title"));
+                }
+            });
+        };
+
+        const results = await getBooksByTitle(title);
+        res.status(200).json(results);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
 });
+
 
 //  Get book review based on ISBN
 public_users.get('/review/:isbn', function (req, res) {
