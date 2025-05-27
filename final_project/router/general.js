@@ -13,15 +13,15 @@ public_users.post('/register', (req, res) => {
         return res.status(400).json({ error: 'Username and password are required.' });
     }
 
-    // Check if the username already exists
-    if (users[username]) {
+    // Check if username already exists
+    const userExists = users.find(u => u.username === username);
+    if (userExists) {
         return res.status(400).json({ error: 'Username already exists.' });
     }
 
-    // Register the new user
-    users[username] = { password }; // You should hash the password in a real application
+    // Register new user by pushing into array
+    users.push({ username, password }); // Again, consider hashing password
     return res.status(201).json({ message: 'User registered successfully.' });
-    console.log(users);
 });
 
 // Get the book list available in the shop

@@ -40,11 +40,55 @@ regd_users.post("/login", (req, res) => {
     }
   });
 
-// Add a book review
+// Middleware to verify JWT and extract username
+regd_users.use((req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ message: 'Authorization header missing' });
+    }
+  
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ message: 'Token missing' });
+    }
+  
+    try {
+      const decoded = jwt.verify(token, 'your_secret_key');
+      req.user = decoded.username;
+      next();
+    } catch (err) {
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
+  });
+  
+// Add or update a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
-});
+    const isbn = req.params.isbn;
+    const review = req.query.review;
+    const username = req.user;
+  
+    if (!review) {
+      return res.status(400).json({ message: "Review content is required in the query string." });
+    }
+  
+    const book = books[isbn];
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
+  
+    // Initialize reviews object if missing
+    if (!book.reviews) {
+      book.reviews = {};
+    }
+  
+    // Add or update the review
+    book.reviews[username] = review;
+  
+    return res.status(200).json({
+      message: "Review added/updated successfully.",
+      reviews: book.reviews
+    });
+  });
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
